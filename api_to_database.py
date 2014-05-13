@@ -4,7 +4,7 @@ from lxml.etree import ParserError
 from pygraph.classes.digraph import digraph
 from pygraph.algorithms.pagerank import pagerank
 from pygraph.classes.exceptions import AdditionError
-from wikia_authority import MinMaxScaler
+from wikia_authority import MinMaxScaler, log
 import traceback
 import json
 import requests
