@@ -12,3 +12,8 @@ class MinMaxScaler:
     def scale(self, val):
         return (((self.enforced_max - self.enforced_min) * (val - self.min))
                 / (self.max - self.min)) + self.enforced_min
+
+
+def log(*args):
+    """TODO: Use a real logger"""
+    print ' '.join([str(arg) for arg in args])
