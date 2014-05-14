@@ -418,7 +418,7 @@ def main():
     start = time.time()
 
     wiki_id = args.wiki_id
-    log.info(u"wiki id is", wiki_id,)
+    log.info(u"wiki id is %s" % wiki_id)
 
     minimum_authors = 5
     minimum_contribution_pct = 0.01
@@ -482,11 +482,11 @@ def main():
     )
     q.wait()
 
-    log.info(wiki_id, u"finished in", time.time() - start, u"seconds")
+    log.info(u"%s finished in %s seconds" % (wiki_id, (time.time() - start)))
 
 
 if __name__ == u'__main__':
     try:
         main()
     except Exception as exc:
-        log.info(exc, traceback.format_exc())
+        log.info("%s %s" % (exc, traceback.format_exc()))
