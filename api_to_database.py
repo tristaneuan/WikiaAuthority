@@ -4,7 +4,8 @@ from lxml.etree import ParserError
 from pygraph.classes.digraph import digraph
 from pygraph.algorithms.pagerank import pagerank
 from pygraph.classes.exceptions import AdditionError
-from wikia_authority import MinMaxScaler, log
+from wikia_authority import MinMaxScaler
+import logging
 import traceback
 import json
 import requests
@@ -20,6 +21,10 @@ smoothing = 0.05
 wiki_id = None
 api_url = None
 edit_distance_memoization_cache = {}
+
+log = logging.getLogger(__name__)
+log.setLevel(logging.DEBUG)
+log.addHandler(logging.StreamHandler())
 
 
 class Unbuffered:
@@ -81,8 +86,8 @@ def get_all_revisions(title_object):
         try:
             response = resp.json()
         except ValueError as e:
-            log(e, traceback.format_exc())
-            log(response.content)
+            log.info(e, traceback.format_exc())
+            log.info(response.content)
             return revisions
         resp.close()
         revisions += response.get(u'query', {}).get(
@@ -90,6 +95,7 @@ def get_all_revisions(title_object):
         if u'query-continue' in response:
             params[u'rvstartid'] = response[u'query-continue'][u'revisions'][
                 u'rvstartid']
+            log.debug(params[u'rvstartid'])  # DEBUG
         else:
             break
     return [title_string, revisions]
@@ -114,9 +120,9 @@ def edit_distance(title_object, earlier_revision, later_revision,
         resp = requests.get(api_url, params=params)
     except requests.exceptions.ConnectionError as e:
         if already_retried:
-            log(u"Gave up on some socket shit", e)
+            log.info(u"Gave up on some socket shit", e)
             return 0
-        log(u"Fucking sockets")
+        log.info(u"Fucking sockets")
         # wait 4 minutes for your wimpy ass sockets to get their shit together
         time.sleep(240)
         return edit_distance(title_object, earlier_revision, later_revision,
@@ -125,8 +131,8 @@ def edit_distance(title_object, earlier_revision, later_revision,
     try:
         response = resp.json()
     except ValueError as e:
-        log(e, traceback.format_exc())
-        log(resp.content)
+        log.info(e, traceback.format_exc())
+        log.info(resp.content)
         return 0
     resp.close()
     time.sleep(0.025)  # prophylactic throttling
@@ -182,7 +188,7 @@ def get_contributing_authors_safe(arg_tuple):
     try:
         res = get_contributing_authors(arg_tuple)
     except Exception as e:
-        log(e, traceback.format_exc())
+        log.info(e, traceback.format_exc())
         return str(wiki_id) + '_' + str(arg_tuple[0][u'pageid']), []
     return res
 
@@ -279,8 +285,8 @@ def links_for_page(title_object):
         try:
             response = resp.json()
         except ValueError as e:
-            log(e, traceback.format_exc())
-            log(resp.content)
+            log.info(e, traceback.format_exc())
+            log.info(resp.content)
             return links
         resp.close()
         response_links = response.get(u'query', {}).get(
@@ -353,8 +359,8 @@ def get_title_top_authors(args, all_titles, all_revisions):
         callback=title_top_authors.update)
     r.wait()
     if len(title_top_authors) == 0:
-        log(u"No title top authors for wiki", args.wiki_id)
-        log(r.get())
+        log.info(u"No title top authors for wiki", args.wiki_id)
+        log.info(r.get())
         sys.exit(1)
 
     contribs_scaler = MinMaxScaler([author[u'contribs']
@@ -412,7 +418,7 @@ def main():
     start = time.time()
 
     wiki_id = args.wiki_id
-    log(u"wiki id is", wiki_id,)
+    log.info(u"wiki id is", wiki_id,)
 
     minimum_authors = 5
     minimum_contribution_pct = 0.01
@@ -423,16 +429,16 @@ def main():
         params={u'ids': wiki_id})
     items = resp.json()['items']
     if wiki_id not in items:
-        log(u"Wiki doesn't exist?")
+        log.info(u"Wiki doesn't exist?")
         sys.exit(1)
     wiki_data = items[wiki_id]
     resp.close()
-    log(wiki_data[u'title'].encode(u'utf8'))
+    log.info(wiki_data[u'title'].encode(u'utf8'))
     api_url = u'%sapi.php' % wiki_data[u'url']
 
     # can't be parallelized since it's an enum
     all_titles = get_all_titles()
-    log(u"Got %d titles" % len(all_titles))
+    log.info(u"Got %d titles" % len(all_titles))
 
     pool = multiprocessing.Pool(processes=args.processes)
 
@@ -440,12 +446,13 @@ def main():
     r = pool.map_async(
         get_all_revisions, all_titles, callback=all_revisions.extend)
     r.wait()
-    log(u"%d Revisions" % sum([len(revs) for title, revs in all_revisions]))
+    log.info(u"%d Revisions" % sum(
+        [len(revs) for title, revs in all_revisions]))
     all_revisions = dict(all_revisions)
 
     title_top_authors = get_title_top_authors(args, all_titles, all_revisions)
 
-    log(time.time() - start)
+    log.info(time.time() - start)
 
     centralities = author_centrality(title_top_authors)
 
@@ -456,7 +463,7 @@ def main():
              authors])
         ) for doc_id, authors in title_top_authors.items()])
 
-    log(u"Got comsqscore, storing data")
+    log.info(u"Got comsqscore, storing data")
 
     bucket = connect_s3().get_bucket(u'nlp-data')
     key = bucket.new_key(
@@ -475,11 +482,11 @@ def main():
     )
     q.wait()
 
-    log(wiki_id, u"finished in", time.time() - start, u"seconds")
+    log.info(wiki_id, u"finished in", time.time() - start, u"seconds")
 
 
 if __name__ == u'__main__':
     try:
         main()
     except Exception as exc:
-        log(exc, traceback.format_exc())
+        log.info(exc, traceback.format_exc())
