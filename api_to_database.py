@@ -86,7 +86,7 @@ def get_all_revisions(title_object):
         try:
             response = resp.json()
         except ValueError as e:
-            log.info(e, traceback.format_exc())
+            log.info("%s %s" % (e, traceback.format_exc()))
             log.info(response.content)
             return revisions
         resp.close()
@@ -120,7 +120,7 @@ def edit_distance(title_object, earlier_revision, later_revision,
         resp = requests.get(api_url, params=params)
     except requests.exceptions.ConnectionError as e:
         if already_retried:
-            log.info(u"Gave up on some socket shit", e)
+            log.info(u"Gave up on some socket shit %s" % e)
             return 0
         log.info(u"Fucking sockets")
         # wait 4 minutes for your wimpy ass sockets to get their shit together
@@ -131,7 +131,7 @@ def edit_distance(title_object, earlier_revision, later_revision,
     try:
         response = resp.json()
     except ValueError as e:
-        log.info(e, traceback.format_exc())
+        log.info("%s %s" % (e, traceback.format_exc()))
         log.info(resp.content)
         return 0
     resp.close()
@@ -188,7 +188,7 @@ def get_contributing_authors_safe(arg_tuple):
     try:
         res = get_contributing_authors(arg_tuple)
     except Exception as e:
-        log.info(e, traceback.format_exc())
+        log.info("%s %s" % (e, traceback.format_exc()))
         return str(wiki_id) + '_' + str(arg_tuple[0][u'pageid']), []
     return res
 
@@ -285,7 +285,7 @@ def links_for_page(title_object):
         try:
             response = resp.json()
         except ValueError as e:
-            log.info(e, traceback.format_exc())
+            log.info("%s %s" % (e, traceback.format_exc()))
             log.info(resp.content)
             return links
         resp.close()
@@ -359,7 +359,7 @@ def get_title_top_authors(args, all_titles, all_revisions):
         callback=title_top_authors.update)
     r.wait()
     if len(title_top_authors) == 0:
-        log.info(u"No title top authors for wiki", args.wiki_id)
+        log.info(u"No title top authors for wiki %s" % args.wiki_id)
         log.info(r.get())
         sys.exit(1)
 
