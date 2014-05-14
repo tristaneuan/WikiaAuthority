@@ -95,7 +95,7 @@ def get_all_revisions(title_object):
         if u'query-continue' in response:
             params[u'rvstartid'] = response[u'query-continue'][u'revisions'][
                 u'rvstartid']
-            log.debug("Start ID is %s" % params[u'rvstartid'])  # DEBUG
+            log.debug("Start ID is %s" % params[u'rvstartid'])
         else:
             break
     return [title_string, revisions]
@@ -205,6 +205,7 @@ def get_contributing_authors(arg_tuple):
 
     title_object, title_revs = arg_tuple
     doc_id = "%s_%s" % (str(wiki_id), title_object[u'pageid'])
+    log.debug("Getting contributing authors for %s" % doc_id)
     top_authors = []
     if len(title_revs) == 1 and u'user' in title_revs[0]:
         return doc_id, []
@@ -354,8 +355,8 @@ def get_title_top_authors(args, all_titles, all_revisions):
     title_top_authors = {}
     r = pool.map_async(
         get_contributing_authors_safe,
-        [(title_obj, all_revisions[title_obj[u'title']]) for title_obj in
-         all_titles],
+        [(title_obj, all_revisions.get(title_obj[u'title'], [])) for title_obj
+         in all_titles],
         callback=title_top_authors.update)
     r.wait()
     if len(title_top_authors) == 0:
