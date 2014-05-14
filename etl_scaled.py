@@ -5,6 +5,7 @@ from argparse import ArgumentParser, FileType
 from boto import connect_s3
 from boto.ec2 import connect_to_region
 from boto.utils import get_instance_metadata
+from wikia_authority import log
 
 
 class Unbuffered:
@@ -49,14 +50,14 @@ def main():
         wid = line.strip()
         key = bucket.get_key(key_name='service_responses/%s/WikiAuthorityService.get' % wid)
         if (not args.overwrite) and (key is not None and key.exists()):
-            print "Key exists for", wid
+            log("Key exists for", wid)
             continue
-        print "Wiki ", wid
+        log("Wiki ", wid)
         try:
-            print subprocess.call("python api_to_database.py --wiki-id=%s --processes=64" % wid, shell=True)
+            log(subprocess.call("python api_to_database.py --wiki-id=%s --processes=64" % wid, shell=True))
             events.append(wid)
         except Exception as e:
-            print e
+            log(e)
             failed_events.write(line)
 
         if args.emit_events and len(events) >= args.event_size:
