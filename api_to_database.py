@@ -95,7 +95,7 @@ def get_all_revisions(title_object):
         if u'query-continue' in response:
             params[u'rvstartid'] = response[u'query-continue'][u'revisions'][
                 u'rvstartid']
-            log.debug(params[u'rvstartid'])  # DEBUG
+            log.debug("Start ID is %s" % params[u'rvstartid'])  # DEBUG
         else:
             break
     return [title_string, revisions]
