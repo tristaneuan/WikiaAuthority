@@ -423,7 +423,7 @@ def main():
         params={u'ids': wiki_id})
     items = resp.json()['items']
     if wiki_id not in items:
-        log(u"Wiki doesn't exist?"0
+        log(u"Wiki doesn't exist?")
         sys.exit(1)
     wiki_data = items[wiki_id]
     resp.close()
