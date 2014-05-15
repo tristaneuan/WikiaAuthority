@@ -44,6 +44,7 @@ sys.stdout = Unbuffered(sys.stdout)
 
 # multiprocessing's gotta grow up and let me do anonymous functions
 def set_page_key(x):
+    log.debug(u"Setting page key for %s" % x)
     bucket = connect_s3().get_bucket(u'nlp-data')
     k = bucket.new_key(
         key_name=u'/service_responses/%s/PageAuthorityService.get' % (
@@ -338,6 +339,7 @@ def author_centrality(titles_to_authors):
          titles_to_authors.values() for author in authors])))
 
     for title in titles_to_authors:
+        log.debug(u"Working on title: %s" % title)
         for author in titles_to_authors[title]:
             try:
                 author_graph.add_edge(
