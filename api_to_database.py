@@ -25,6 +25,9 @@ edit_distance_memoization_cache = {}
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 log.addHandler(logging.StreamHandler())
+fh = logging.FileHandler('api_to_database.log')
+fh.setLevel(logging.ERROR)
+log.addHandler(fh)
 
 
 class Unbuffered:
@@ -87,8 +90,8 @@ def get_all_revisions(title_object):
         try:
             response = resp.json()
         except ValueError as e:
-            log.info("%s %s" % (e, traceback.format_exc()))
-            log.info(response.content)
+            log.error("%s %s" % (e, traceback.format_exc()))
+            log.error(response.content)
             return revisions
         resp.close()
         revisions += response.get(u'query', {}).get(
@@ -120,7 +123,7 @@ def edit_distance(title_object, earlier_revision, later_revision,
     try:
         resp = requests.get(api_url, params=params)
     except requests.exceptions.ConnectionError as e:
-        log.debug(u"Encountered exception: %s" % e)
+        log.error(u"%s %s" % (e, traceback.format_exc()))
         log.debug(u"Already retried? %s" % str(already_retried))
         if already_retried:
             log.info(u"Gave up on some socket shit %s" % e)
@@ -137,8 +140,8 @@ def edit_distance(title_object, earlier_revision, later_revision,
     try:
         response = resp.json()
     except ValueError as e:
-        log.info("%s %s" % (e, traceback.format_exc()))
-        log.info(resp.content)
+        log.error("%s %s" % (e, traceback.format_exc()))
+        log.error(resp.content)
         return 0
     resp.close()
     time.sleep(0.025)  # prophylactic throttling
@@ -168,6 +171,7 @@ def edit_distance(title_object, earlier_revision, later_revision,
                                              later_revision)] = distance
             return distance
         except (TypeError, ParserError, UnicodeEncodeError):
+            log.error(traceback.format_exc())
             return 0
     return 0
 
@@ -194,7 +198,7 @@ def get_contributing_authors_safe(arg_tuple):
     try:
         res = get_contributing_authors(arg_tuple)
     except Exception as e:
-        log.info("%s %s" % (e, traceback.format_exc()))
+        log.error("%s %s" % (e, traceback.format_exc()))
         return str(wiki_id) + '_' + str(arg_tuple[0][u'pageid']), []
     return res
 
@@ -292,8 +296,8 @@ def links_for_page(title_object):
         try:
             response = resp.json()
         except ValueError as e:
-            log.info("%s %s" % (e, traceback.format_exc()))
-            log.info(resp.content)
+            log.error("%s %s" % (e, traceback.format_exc()))
+            log.error(resp.content)
             return links
         resp.close()
         response_links = response.get(u'query', {}).get(
@@ -497,4 +501,4 @@ if __name__ == u'__main__':
     try:
         main()
     except Exception as exc:
-        log.info("%s %s" % (exc, traceback.format_exc()))
+        log.error("%s %s" % (exc, traceback.format_exc()))
