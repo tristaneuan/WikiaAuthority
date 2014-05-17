@@ -75,7 +75,7 @@ def get_all_titles(aplimit=500):
 
 
 def get_all_revisions(title_object):
-    global api_url
+    global api_url, wiki_id
     title_string = title_object[u'title']
     params = {u'action': u'query',
               u'prop': u'revisions',
@@ -89,8 +89,8 @@ def get_all_revisions(title_object):
         resp = requests.get(api_url, params=params)
         try:
             response = resp.json()
-        except ValueError as e:
-            log.error("%s %s" % (e, traceback.format_exc()))
+        except ValueError:
+            log.error(u"%s\n%s" % (wiki_id, traceback.format_exc()))
             log.error(response.content)
             return revisions
         resp.close()
@@ -107,7 +107,7 @@ def get_all_revisions(title_object):
 
 def edit_distance(title_object, earlier_revision, later_revision,
                   already_retried=False):
-    global api_url, edit_distance_memoization_cache
+    global api_url, edit_distance_memoization_cache, wiki_id
     if (earlier_revision, later_revision) in edit_distance_memoization_cache:
         return edit_distance_memoization_cache[(earlier_revision,
                                                 later_revision)]
@@ -123,7 +123,7 @@ def edit_distance(title_object, earlier_revision, later_revision,
     try:
         resp = requests.get(api_url, params=params)
     except requests.exceptions.ConnectionError as e:
-        log.error(u"%s %s" % (e, traceback.format_exc()))
+        log.error(u"%s\n%s" % (wiki_id, traceback.format_exc()))
         log.debug(u"Already retried? %s" % str(already_retried))
         if already_retried:
             log.info(u"Gave up on some socket shit %s" % e)
@@ -139,8 +139,8 @@ def edit_distance(title_object, earlier_revision, later_revision,
 
     try:
         response = resp.json()
-    except ValueError as e:
-        log.error("%s %s" % (e, traceback.format_exc()))
+    except ValueError:
+        log.error(u"%s\n%s" % (wiki_id, traceback.format_exc()))
         log.error(resp.content)
         return 0
     resp.close()
@@ -171,7 +171,7 @@ def edit_distance(title_object, earlier_revision, later_revision,
                                              later_revision)] = distance
             return distance
         except (TypeError, ParserError, UnicodeEncodeError):
-            log.error(traceback.format_exc())
+            log.error(u"%s\n%s" % (wiki_id, traceback.format_exc()))
             return 0
     return 0
 
@@ -197,8 +197,8 @@ def get_contributing_authors_safe(arg_tuple):
     global wiki_id
     try:
         res = get_contributing_authors(arg_tuple)
-    except Exception as e:
-        log.error("%s %s" % (e, traceback.format_exc()))
+    except Exception:
+        log.error(u"%s\n%s" % (wiki_id, traceback.format_exc()))
         return str(wiki_id) + '_' + str(arg_tuple[0][u'pageid']), []
     return res
 
@@ -284,7 +284,7 @@ def get_contributing_authors(arg_tuple):
 
 
 def links_for_page(title_object):
-    global api_url
+    global api_url, wiki_id
     title_string = title_object[u'title']
     params = {
         u'action': u'query', u'titles': title_string.encode(u'utf8'),
@@ -295,8 +295,8 @@ def links_for_page(title_object):
         resp = requests.get(api_url, params=params)
         try:
             response = resp.json()
-        except ValueError as e:
-            log.error("%s %s" % (e, traceback.format_exc()))
+        except ValueError:
+            log.error(u"%s\n%s" % (wiki_id, traceback.format_exc()))
             log.error(resp.content)
             return links
         resp.close()
@@ -501,4 +501,4 @@ if __name__ == u'__main__':
     try:
         main()
     except Exception as exc:
-        log.error("%s %s" % (exc, traceback.format_exc()))
+        log.error(u"%s %s" % (exc, traceback.format_exc()))
