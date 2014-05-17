@@ -500,5 +500,6 @@ def main():
 if __name__ == u'__main__':
     try:
         main()
-    except Exception as exc:
-        log.error(u"%s %s" % (exc, traceback.format_exc()))
+    except Exception:
+        wiki_id = get_args().wiki_id
+        log.error(u"%s\n%s" % (wiki_id, traceback.format_exc()))
