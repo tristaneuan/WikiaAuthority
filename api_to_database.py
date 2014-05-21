@@ -57,13 +57,18 @@ def set_page_key(x):
 
 
 def get_all_titles(aplimit=500):
-    global api_url
+    global api_url, wiki_id
     params = {u'action': u'query', u'list': u'allpages', u'aplimit': aplimit,
               u'apfilterredir': u'nonredirects', u'format': u'json'}
     allpages = []
     while True:
         resp = requests.get(api_url, params=params)
-        response = resp.json()
+        try:
+            response = resp.json()
+        except ValueError:
+            log.error(u"%s\n%s" % (wiki_id, traceback.format_exc()))
+            log.error(response.content)
+            return allpages
         resp.close()
         allpages += response.get(u'query', {}).get(u'allpages', [])
         if u'query-continue' in response:
@@ -92,7 +97,7 @@ def get_all_revisions(title_object):
         except ValueError:
             log.error(u"%s\n%s" % (wiki_id, traceback.format_exc()))
             log.error(response.content)
-            return revisions
+            return [title_string, revisions]
         resp.close()
         revisions += response.get(u'query', {}).get(
             u'pages', {0: {}}).values()[0].get(u'revisions', [])
