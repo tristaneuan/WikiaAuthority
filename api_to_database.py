@@ -379,10 +379,12 @@ def get_title_top_authors(args, all_titles, all_revisions):
         log.info(u"No title top authors for wiki %s" % args.wiki_id)
         log.info(r.get())
         sys.exit(1)
-
-    contribs_scaler = MinMaxScaler([author[u'contribs']
-                                    for title in title_top_authors
-                                    for author in title_top_authors[title]])
+    contribs = [author[u'contribs'] for title in title_top_authors for author
+                in title_top_authors[title]]
+    if len(contribs) == 0:
+        log.info(u"No contributions for wiki %s" % args.wiki_id)
+        sys.exit(1)
+    contribs_scaler = MinMaxScaler(contribs)
     scaled_title_top_authors = {}
     for title, authors in title_top_authors.items():
         new_authors = []
