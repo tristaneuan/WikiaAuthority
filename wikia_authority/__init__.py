@@ -8,10 +8,6 @@ class MinMaxScaler:
         self.max = max(vals)
         self.enforced_min = enforced_min
         self.enforced_max = enforced_max
-        print 'min', str(self.min)
-        print 'max', str(self.max)
-        print 'enforced_min', str(self.enforced_min)
-        print 'enforced_max', str(self.enforced_max)
 
     def scale(self, val):
         denominator = self.max - self.min
