@@ -67,7 +67,7 @@ def get_all_titles(aplimit=500):
             response = resp.json()
         except ValueError:
             log.error(u"%s\n%s" % (wiki_id, traceback.format_exc()))
-            log.error(response.content)
+            log.error(resp.content)
             return allpages
         resp.close()
         allpages += response.get(u'query', {}).get(u'allpages', [])
@@ -96,7 +96,7 @@ def get_all_revisions(title_object):
             response = resp.json()
         except ValueError:
             log.error(u"%s\n%s" % (wiki_id, traceback.format_exc()))
-            log.error(response.content)
+            log.error(resp.content)
             return [title_string, revisions]
         resp.close()
         revisions += response.get(u'query', {}).get(
