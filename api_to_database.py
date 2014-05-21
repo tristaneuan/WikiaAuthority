@@ -129,11 +129,11 @@ def edit_distance(title_object, earlier_revision, later_revision,
         resp = requests.get(api_url, params=params)
     except requests.exceptions.ConnectionError as e:
         log.error(u"%s\n%s" % (wiki_id, traceback.format_exc()))
-        log.debug(u"Already retried? %s" % str(already_retried))
+        log.error(u"Already retried? %s" % str(already_retried))
         if already_retried:
-            log.info(u"Gave up on some socket shit %s" % e)
+            log.error(u"Gave up on some socket shit %s" % e)
             return 0
-        log.info(u"Fucking sockets")
+        log.error(u"Fucking sockets")
         ## wait 4 minutes for your wimpy ass sockets to get their shit together
         #time.sleep(240)
 
