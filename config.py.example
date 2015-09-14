@@ -1,0 +1,10 @@
+FLOWER = 'http://flower.tld:1234'
+REGION = 'us-west-2'
+PRICE = '0.300'
+AMI = 'ami-abcd1234'
+KEY = 'my-aws-key'
+SEC = 'default'
+TYPE = 'm2.4xlarge'
+TAG = 'authority-worker'
+MAX_TASKS = 50
+STALL = 5
